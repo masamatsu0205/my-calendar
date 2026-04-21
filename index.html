@@ -6,49 +6,76 @@
     <title>カレンダー</title>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c&display=swap" rel="stylesheet">
 
-    <!-- Supabase SDK -->
+    <!-- Supabase SDK：JavaScriptからDBを操作するためのライブラリ -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
+
+        /* ============================================================
+           オーバーレイ
+           モーダルを開いたときに背景を暗くする半透明の幕
+        ============================================================ */
         .overlay {
             display: none;
-            position: fixed;
+            position: fixed;       /* 画面に固定 */
             top: 0; left: 0;
             width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.4);
-            z-index: 999;
+            z-index: 999;          /* モーダルより一段下 */
         }
+
+        /* ============================================================
+           モーダル共通スタイル
+           予定追加・タイムライン両方に適用
+        ============================================================ */
         .modal {
             display: none;
             position: fixed;
             top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%); /* 完全中央に配置 */
             background: #3b0b0b;
             border: 2px solid #00D9FF;
             border-radius: 12px;
             padding: 20px;
-            z-index: 1000;
+            z-index: 1000;         /* オーバーレイより上 */
         }
+
+        /* ============================================================
+           ページタイトル（h1）
+        ============================================================ */
         h1 {
             text-align: center;
             color: #00D9FF;
         }
+
+        /* ============================================================
+           カレンダーヘッダー
+           ＜＜ 今月へ ＞＞ ／ 年月 ／ 予定追加ボタン を横並びに
+        ============================================================ */
         #calendarHeader {
             display: flex;
-            justify-content: space-between;
+            justify-content: space-between; /* 左・中央・右に均等配置 */
             align-items: center;
             width: 80%;
             margin: 10px auto;
         }
+
+        /* 年月テキスト */
         #calendarTitle {
             font-size: 36px;
             font-weight: 900;
             color: #00D9FF;
             letter-spacing: 2px;
         }
+
+        /* 月ナビボタングループ */
         #monthNav {
             text-align: center;
         }
+
+        /* ============================================================
+           カレンダーテーブル本体
+        ============================================================ */
         #calendar {
             width: 70%;
             margin: 4px auto;
@@ -58,6 +85,8 @@
             border-radius: 10px;
             overflow: hidden;
         }
+
+        /* 曜日行（1行目）だけ背景色と文字スタイルを変える */
         #calendar tr:first-child td {
             font-size: 18px;
             font-weight: 700;
@@ -67,23 +96,80 @@
             vertical-align: middle;
             padding: 10px 0;
         }
+
+        /* 日付セル共通 */
         #calendar td {
-            padding: 0px;
-            text-align: center;
+            padding: 2px;
+            text-align: left;      /* 日付数字は左上に */
             height: 80px;
-            width: 14%;
+            width: 14%;            /* 7列なので均等 */
             vertical-align: top;
             border: 2px solid #3b0b0b;
             font-weight: 500;
+            position: relative;    /* 丸を絶対配置するための基準 */
         }
+
+        /* 日付数字 */
+        .date-number {
+            display: inline-block;
+            padding-left: 4px;
+        }
+
+        /* 予定ラベルエリア（日付数字の下） */
+        .date-events {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;              /* 予定同士の隙間は1px */
+            padding: 0 2px;
+            margin-top: 2px;
+        }
+
+        /* 予定ラベル1件分 */
+        .date-event-label {
+            color: white;
+            font-size: 10px;
+            padding: 1px 3px;
+            border-radius: 3px;
+            display: block;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        /* 朝昼晩の丸を右端に縦に並べるコンテナ */
+        .meal-dots {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;              /* 丸同士の間隔は余裕をもたせる */
+        }
+
+        /* 丸1つ分のスタイル */
+        .meal-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.2);
+            flex-shrink: 0;
+        }
+
+        /* ============================================================
+           タイムラインモーダル
+        ============================================================ */
         #viewModal {
-            width: 600px;
+            width: 650px;          /* 左右分割するので少し広め */
             height: 90vh;
             overflow-y: auto;
         }
+
+        /* タイトル文字色 */
         #viewModalTitle { color: #00D9FF; }
-        #modal h3       { color: #00D9FF; }
-        #modal label    { color: #00D9FF; }
+
+        /* ============================================================
+           タイムライン各行
+        ============================================================ */
         .timeline-row {
             display: flex;
             align-items: flex-start;
@@ -91,29 +177,85 @@
             min-height: 5px;
             padding: 1px 0;
         }
+
+        /* 時刻ラベル（左端） */
         .timeline-time {
-            width: 50px;
+            width: 40px;
             font-size: 12px;
             color: #00D9FF;
             flex-shrink: 0;
+            padding-top: 2px;
         }
+
+        /* 左側エリア（緑・青：自分） */
+        .timeline-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            padding-right: 4px;
+            align-items: flex-end; /* 右寄せ（中心線に近づける） */
+        }
+
+        /* 中心線 */
+        .timeline-center {
+            width: 1px;
+            background: #7b7256;
+            align-self: stretch;
+            flex-shrink: 0;
+        }
+
+        /* 右側エリア（赤・オレンジ・茶：お母さん） */
+        .timeline-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            padding-left: 4px;
+            align-items: flex-start; /* 左寄せ（中心線に近づける） */
+        }
+
+        /* 予定1件分（タイムライン内） */
         .timeline-event {
             border-radius: 4px;
             padding: 2px 6px;
-            margin: 2px 4px;
-            font-size: 13px;
+            font-size: 12px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
+            cursor: pointer;
+            max-width: 100%;
         }
+
+        /* 削除ボタン（×） */
         .timeline-event button {
             background: none;
             border: none;
             color: red;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             padding: 0;
+            flex-shrink: 0;
         }
+
+        /* 色帯（開始〜終了の間の行に表示） */
+        .timeline-bar {
+            opacity: 0.4;
+            height: 100%;
+            min-height: 20px;
+            width: 8px;
+            border-radius: 2px;
+        }
+
+        /* ============================================================
+           予定追加モーダルのラベル・タイトル
+        ============================================================ */
+        #modal h3    { color: #00D9FF; }
+        #modal label { color: #00D9FF; }
+
+        /* ============================================================
+           色選択ボタン（カラーピッカー）
+        ============================================================ */
         .colorOption {
             display: inline-block;
             width: 30px;
@@ -128,7 +270,12 @@
             border: 2px solid transparent;
             vertical-align: middle;
         }
+        /* 選択中は黒枠で強調 */
         .colorOption.selected { border: 2px solid black; }
+
+        /* ============================================================
+           全体フォントと背景画像
+        ============================================================ */
         body {
             font-family: 'M PLUS Rounded 1c', sans-serif;
             font-weight: 400;
@@ -137,9 +284,14 @@
             background-size: 110%;
             background-repeat: no-repeat;
         }
+
+        /* フォームパーツにも同じフォントを適用 */
         button, input, select, textarea { font-family: inherit !important; }
+
+        /* ============================================================
+           ボタン共通スタイル
+        ============================================================ */
         button {
-            font-family: inherit;
             padding: 8px 14px;
             font-size: 20px;
             border-radius: 8px;
@@ -152,6 +304,7 @@
             background: #ada07a;
             transform: translateY(-1px);
         }
+
     </style>
 </head>
 
@@ -159,9 +312,12 @@
 
     <h1 id="title">カレンダー</h1>
 
-    <div id="overlay" class="overlay" onclick="closeModal()"></div>
+    <!-- オーバーレイ：クリックで全モーダルを閉じる -->
+    <div id="overlay" class="overlay" onclick="closeAllModals()"></div>
 
-    <!-- 予定追加モーダル -->
+    <!-- ============================================================
+         予定追加・編集モーダル
+    ============================================================ -->
     <div id="modal" class="modal">
         <h3>予定追加</h3>
         <label>年: <input type="number" id="inputYear"></label><br><br>
@@ -174,14 +330,16 @@
             <button type="button" id="colorToggleBtn" onclick="toggleColorPicker()">🎨 色を選ぶ</button>
         </label>
         <div id="colorPicker" style="display:none;">
-            <span class="colorOption" data-color="#e74c3c" style="background:#e74c3c;">赤</span>
-            <span class="colorOption" data-color="#e67e22" style="background:#e67e22;">オレンジ</span>
+            <!-- 左側（自分）用の色 -->
             <span class="colorOption" data-color="#2ecc71" style="background:#2ecc71;">緑</span>
             <span class="colorOption" data-color="#1abc9c" style="background:#1abc9c;">ミント</span>
             <span class="colorOption" data-color="#3498db" style="background:#3498db;">青</span>
             <span class="colorOption" data-color="#9b59b6" style="background:#9b59b6;">紫</span>
-            <span class="colorOption" data-color="#e91e63" style="background:#e91e63;">ピンク</span>
+            <!-- 右側（お母さん）用の色 -->
+            <span class="colorOption" data-color="#e74c3c" style="background:#e74c3c;">赤</span>
+            <span class="colorOption" data-color="#e67e22" style="background:#e67e22;">オレンジ</span>
             <span class="colorOption" data-color="#795548" style="background:#795548;">茶</span>
+            <span class="colorOption" data-color="#e91e63" style="background:#e91e63;">ピンク</span>
             <span class="colorOption" data-color="#607d8b" style="background:#607d8b;">グレー</span>
         </div>
         <input type="hidden" id="inputColor" value="#3498db">
@@ -190,7 +348,9 @@
         <button onclick="closeModal()">キャンセル</button>
     </div>
 
-    <!-- タイムラインモーダル -->
+    <!-- ============================================================
+         タイムラインモーダル（日付クリックで開く）
+    ============================================================ -->
     <div id="viewModal" class="modal">
         <h3 id="viewModalTitle"></h3>
         <div id="timeline"></div>
@@ -198,7 +358,9 @@
         <button onclick="closeViewModal()">閉じる</button>
     </div>
 
-    <!-- ヘッダー -->
+    <!-- ============================================================
+         ヘッダー：ナビ / 年月 / 予定追加ボタン
+    ============================================================ -->
     <div id="calendarHeader">
         <div id="monthNav">
             <button onclick="prevMonth()">＜＜</button>
@@ -211,24 +373,54 @@
         </div>
     </div>
 
+    <!-- カレンダー本体テーブル -->
     <table border="1" id="calendar"></table>
 
 
     <script>
 
-        // ==============================
+        // ============================================================
         // Supabase接続設定
-        // ==============================
-
+        // URLとKEYはSupabaseのProject Settings → APIから取得
+        // ============================================================
         const SUPABASE_URL = "https://jpmlzfapdjoqxgbbnpup.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwbWx6ZmFwZGpvcXhnYmJucHVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MjAyMDMsImV4cCI6MjA5MjI5NjIwM30.wAiIc5rs9R92vDwYFk6CgRdT7utliBHLAsxff63aEZ4";
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 
-        // ==============================
-        // 変数
-        // ==============================
+        // ============================================================
+        // 左右判定：色で左（自分）か右（お母さん）かを決める
+        // ============================================================
+        const LEFT_COLORS  = ["#2ecc71", "#1abc9c", "#3498db", "#9b59b6"]; // 緑・ミント・青・紫
+        const RIGHT_COLORS = ["#e74c3c", "#e67e22", "#795548", "#e91e63", "#607d8b"]; // 赤・オレンジ・茶・ピンク・グレー
 
+        function getSide(color) {
+            // 左側の色なら"left"、それ以外は"right"を返す
+            return LEFT_COLORS.includes(color) ? "left" : "right";
+        }
+
+
+        // ============================================================
+        // 朝昼晩の色の定義
+        // ============================================================
+        const MEAL_COLORS = {
+            unknown:  "#aaaaaa", // 灰色：未定（デフォルト）
+            needed:   "#2ecc71", // 緑：必要
+            notNeeded:"#e74c3c", // 赤：不要
+            bento:    "#f1c40f"  // 黄：お弁当
+        };
+
+        // 次の状態に切り替えるサイクル
+        const MEAL_CYCLE = ["unknown", "needed", "notNeeded", "bento"];
+
+        // 朝昼晩のデータ保存場所
+        // { "2026-04-14": { morning: "unknown", lunch: "needed", dinner: "notNeeded" } }
+        let mealData = {};
+
+
+        // ============================================================
+        // 変数
+        // ============================================================
         let events       = {};
         let currentYear  = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
@@ -243,26 +435,25 @@
         const days       = ["日", "月", "火", "水", "木", "金", "土"];
 
 
-        // ==============================
-        // 初期化
-        // ==============================
-
+        // ============================================================
+        // 初期化：祝日取得 → DB取得 → 描画
+        // ============================================================
         window.onload = async function () {
             await fetchHolidays();
             await loadEvents();
         };
 
 
-        // ==============================
-        // 祝日データ取得
-        // ==============================
-
+        // ============================================================
+        // 祝日データ取得（外部API）
+        // ============================================================
         async function fetchHolidays() {
             const res  = await fetch("https://holidays-jp.github.io/api/v1/date.json");
             const data = await res.json();
 
             for (let dateStr in data) {
                 let d   = new Date(dateStr);
+                // ゼロ埋めしてSupabaseのDATE型と形式を統一
                 let key =
                     d.getFullYear() + "-" +
                     String(d.getMonth() + 1).padStart(2, "0") + "-" +
@@ -272,16 +463,14 @@
         }
 
 
-        // ==============================
-        // Supabaseからデータ取得
-        // ==============================
-
+        // ============================================================
+        // SupabaseからDB取得
+        // ============================================================
         async function loadEvents() {
-            // eventsテーブルから全件取得して日付・開始時刻順に並べる
             const { data, error } = await sb
                 .from("events")
                 .select("*")
-                .order("date", { ascending: true })
+                .order("date",       { ascending: true })
                 .order("start_time", { ascending: true });
 
             if (error) {
@@ -307,20 +496,18 @@
         }
 
 
-        // ==============================
+        // ============================================================
         // 時刻を "HH:MM" 形式に整形
-        // ==============================
-
+        // Supabaseは "09:00:00" で返すので先頭5文字だけ使う
+        // ============================================================
         function formatTime(timeStr) {
-            // Supabaseも "09:00:00" 形式で返ってくるので "09:00" に切り詰める
             return timeStr.slice(0, 5);
         }
 
 
-        // ==============================
+        // ============================================================
         // カレンダー描画
-        // ==============================
-
+        // ============================================================
         function renderCalendar() {
             updateUI();
 
@@ -331,14 +518,17 @@
             const lastDate     = new Date(currentYear, currentMonth + 1, 0).getDate();
             const prevLastDate = new Date(currentYear, currentMonth, 0).getDate();
 
+            // タイトルを更新
             document.getElementById("title").textContent =
                 currentYear + "年" + (currentMonth + 1) + "月";
 
             let html = "<tr>";
+
+            // 曜日行
             for (let d of days) { html += "<td>" + d + "</td>"; }
             html += "</tr><tr>";
 
-            // 前月の日付
+            // 前月の日付（薄いグレーで表示）
             for (let i = 0; i < firstDay; i++) {
                 html += "<td style='color:lightgray'>" + (prevLastDate - firstDay + i + 1) + "</td>";
             }
@@ -349,6 +539,7 @@
             for (let d = 1; d <= lastDate; d++) {
 
                 let dayOfWeek = (d + firstDay - 1) % 7;
+                // ゼロ埋めキー（Supabaseと形式を統一）
                 let key =
                     currentYear + "-" +
                     String(currentMonth + 1).padStart(2, "0") + "-" +
@@ -357,10 +548,14 @@
                 let color      = "";
                 let todayStyle = "";
 
+                // 曜日の色付け
                 if      (dayOfWeek === 0) { color = "red";  }
                 else if (dayOfWeek === 6) { color = "blue"; }
-                if (holidays[key])        { color = "red";  }
 
+                // 祝日は赤
+                if (holidays[key]) { color = "red"; }
+
+                // 今日は緑＋文字大きく（最優先）
                 let isToday = (
                     currentYear  === todayYear  &&
                     currentMonth === todayMonth &&
@@ -368,29 +563,51 @@
                 );
                 if (isToday) {
                     color      = "green";
-                    todayStyle = "font-size:25px; font-weight:bold;";
+                    todayStyle = "font-size:20px; font-weight:bold;";
                 }
 
-                let dots = "";
+                // 予定ラベル（先頭4文字）を生成
+                let dotsHtml = "";
                 if (events[key]) {
                     for (let ev of events[key]) {
-                        dots +=
-                            "<span style='background:" + ev.color +
-                            "; color:white; font-size:10px; padding:2px 4px; margin:1px; border-radius:4px; display:inline-block;'>" +
+                        dotsHtml +=
+                            "<span class='date-event-label' style='background:" + ev.color + ";'>" +
                             ev.text.slice(0, 4) +
                             "</span>";
                     }
                 }
 
+                // 朝昼晩の丸を生成
+                // mealData[key]がなければデフォルト（全部unknown）で初期化
+                if (!mealData[key]) {
+                    mealData[key] = { morning: "unknown", lunch: "unknown", dinner: "unknown" };
+                }
+                let meal    = mealData[key];
+                let mealHtml =
+                    "<div class='meal-dots'>" +
+                    // 朝：クリックで次の状態に切り替え
+                    "<div class='meal-dot' style='background:" + MEAL_COLORS[meal.morning] + ";' " +
+                    "onclick='cycleMeal(\"" + key + "\",\"morning\")' title='朝'></div>" +
+                    // 昼
+                    "<div class='meal-dot' style='background:" + MEAL_COLORS[meal.lunch] + ";' " +
+                    "onclick='cycleMeal(\"" + key + "\",\"lunch\")' title='昼'></div>" +
+                    // 夜
+                    "<div class='meal-dot' style='background:" + MEAL_COLORS[meal.dinner] + ";' " +
+                    "onclick='cycleMeal(\"" + key + "\",\"dinner\")' title='夜'></div>" +
+                    "</div>";
+
                 html +=
                     "<td style='color:" + color + "; " + todayStyle + "' onclick='openTimeline(\"" + key + "\")'>" +
-                    d + "<br>" + dots + "</td>";
+                    "<span class='date-number'>" + d + "</span>" +
+                    "<div class='date-events'>" + dotsHtml + "</div>" +
+                    mealHtml +
+                    "</td>";
 
                 count++;
                 if (count % 7 === 0) { html += "</tr><tr>"; }
             }
 
-            // 翌月の日付
+            // 翌月の日付（薄いグレーで表示）
             let nextDate = 1;
             while (count % 7 !== 0) {
                 html += "<td style='color:lightgray'>" + nextDate + "</td>";
@@ -403,11 +620,35 @@
         }
 
 
-        // ==============================
-        // タイムライン表示
-        // ==============================
+        // ============================================================
+        // 朝昼晩の丸をクリックしたとき次の状態に切り替える
+        // unknown → needed → notNeeded → bento → unknown ...
+        // ============================================================
+        function cycleMeal(key, mealType) {
+            // イベントの伝播を止めてタイムラインが開かないようにする
+            event.stopPropagation();
 
+            if (!mealData[key]) {
+                mealData[key] = { morning: "unknown", lunch: "unknown", dinner: "unknown" };
+            }
+
+            let current = mealData[key][mealType];
+            let idx     = MEAL_CYCLE.indexOf(current);
+            // 次のインデックスへ（末尾なら0に戻る）
+            mealData[key][mealType] = MEAL_CYCLE[(idx + 1) % MEAL_CYCLE.length];
+
+            renderCalendar();
+        }
+
+
+        // ============================================================
+        // タイムライン表示（日付クリックで開く）
+        // 左側：緑・ミント・青・紫（自分）
+        // 右側：赤・オレンジ・茶・ピンク・グレー（お母さん）
+        // ============================================================
         function openTimeline(key) {
+
+            // 祝日があれば名前をタイトルに追加
             let titleText = key;
             if (holidays[key]) { titleText += " 🎌 " + holidays[key]; }
             document.getElementById("viewModalTitle").textContent = titleText;
@@ -415,10 +656,14 @@
             let html = "";
 
             for (let h = 0; h < 24; h++) {
-                html += "<div class='timeline-row'>";
-                html += "<div class='timeline-time'>" + h + ":00</div>";
-                html += "<div class='timeline-events'>";
 
+                html += "<div class='timeline-row'>";
+
+                // 時刻ラベル
+                html += "<div class='timeline-time'>" + h + ":00</div>";
+
+                // 左側エリア（自分）
+                html += "<div class='timeline-left'>";
                 if (events[key]) {
                     for (let idx = 0; idx < events[key].length; idx++) {
                         let ev        = events[key][idx];
@@ -426,38 +671,72 @@
                         let endHour   = parseInt(ev.end_time.split(":")[0]);
                         let endMin    = parseInt(ev.end_time.split(":")[1]);
 
-                        // 開始時刻の行に予定を表示
-                        if (startHour === h) {
-                            let startStr = formatTime(ev.start_time);
-                            let endStr   = formatTime(ev.end_time);
-                            html +=
-                                "<div class='timeline-event' style='background:" + ev.color + "; color:white; cursor:pointer;' " +
-                                "onclick='editEvent(\"" + key + "\"," + idx + ")'>" +
-                                "<div>" +
-                                "<div style='font-size:11px;'>" + startStr + " - " + endStr + "</div>" +
-                                "<div>" + ev.text + "</div>" +
-                                "</div>" +
-                                "<button onclick='event.stopPropagation(); deleteEvent(\"" + key + "\"," + idx + ")'>×</button>" +
-                                "</div>";
-                        }
-
-                        // 開始〜終了の間の行に色帯を表示
-                        if (h > startHour && (h < endHour || (h === endHour && endMin > 0))) {
-                            html +=
-                                "<div style='background:" + ev.color +
-                                "; opacity:0.4; height:100%; min-height:20px; width:8px; border-radius:2px; margin:1px 4px;'></div>";
+                        if (getSide(ev.color) === "left") {
+                            // 開始時刻の行に予定を表示
+                            if (startHour === h) {
+                                let startStr = formatTime(ev.start_time);
+                                let endStr   = formatTime(ev.end_time);
+                                html +=
+                                    "<div class='timeline-event' style='background:" + ev.color + "; color:white;' " +
+                                    "onclick='editEvent(\"" + key + "\"," + idx + ")'>" +
+                                    "<div>" +
+                                    "<div style='font-size:10px;'>" + startStr + "-" + endStr + "</div>" +
+                                    "<div>" + ev.text + "</div>" +
+                                    "</div>" +
+                                    "<button onclick='event.stopPropagation(); deleteEvent(\"" + key + "\"," + idx + ")'>×</button>" +
+                                    "</div>";
+                            }
+                            // 開始〜終了の間の行に色帯を表示
+                            if (h > startHour && (h < endHour || (h === endHour && endMin > 0))) {
+                                html += "<div class='timeline-bar' style='background:" + ev.color + ";'></div>";
+                            }
                         }
                     }
                 }
+                html += "</div>";
 
-                html += "</div></div>";
+                // 中心線（常に固定）
+                html += "<div class='timeline-center'></div>";
+
+                // 右側エリア（お母さん）
+                html += "<div class='timeline-right'>";
+                if (events[key]) {
+                    for (let idx = 0; idx < events[key].length; idx++) {
+                        let ev        = events[key][idx];
+                        let startHour = parseInt(ev.start_time.split(":")[0]);
+                        let endHour   = parseInt(ev.end_time.split(":")[0]);
+                        let endMin    = parseInt(ev.end_time.split(":")[1]);
+
+                        if (getSide(ev.color) === "right") {
+                            if (startHour === h) {
+                                let startStr = formatTime(ev.start_time);
+                                let endStr   = formatTime(ev.end_time);
+                                html +=
+                                    "<div class='timeline-event' style='background:" + ev.color + "; color:white;' " +
+                                    "onclick='editEvent(\"" + key + "\"," + idx + ")'>" +
+                                    "<div>" +
+                                    "<div style='font-size:10px;'>" + startStr + "-" + endStr + "</div>" +
+                                    "<div>" + ev.text + "</div>" +
+                                    "</div>" +
+                                    "<button onclick='event.stopPropagation(); deleteEvent(\"" + key + "\"," + idx + ")'>×</button>" +
+                                    "</div>";
+                            }
+                            if (h > startHour && (h < endHour || (h === endHour && endMin > 0))) {
+                                html += "<div class='timeline-bar' style='background:" + ev.color + ";'></div>";
+                            }
+                        }
+                    }
+                }
+                html += "</div>";
+
+                html += "</div>"; // timeline-row終わり
             }
 
             document.getElementById("timeline").innerHTML = html;
             document.getElementById("viewModal").style.display = "block";
             document.getElementById("overlay").style.display  = "block";
 
-            // 現在時刻付近にスクロール
+            // 現在時刻の行にスクロール
             const currentHour = new Date().getHours();
             const rows        = document.querySelectorAll(".timeline-row");
             if (rows[currentHour]) {
@@ -471,17 +750,16 @@
         }
 
 
-        // ==============================
+        // ============================================================
         // 予定削除（Supabase）
-        // ==============================
-
+        // ============================================================
         async function deleteEvent(key, idx) {
             const id = events[key][idx].id;
 
             const { error } = await sb
                 .from("events")
                 .delete()
-                .eq("id", id);  // idが一致する行を削除
+                .eq("id", id); // idが一致する行を削除
 
             if (error) {
                 console.error("削除エラー:", error);
@@ -493,10 +771,9 @@
         }
 
 
-        // ==============================
-        // 予定追加モーダル
-        // ==============================
-
+        // ============================================================
+        // 予定追加モーダルを開く
+        // ============================================================
         function openModal() {
             const now = new Date();
 
@@ -509,13 +786,15 @@
             document.getElementById("inputEndTime").value   =
                 String(now.getHours() + 1).padStart(2, "0") + ":" +
                 String(now.getMinutes()).padStart(2, "0");
-            document.getElementById("inputEvent").value     = "";
+            document.getElementById("inputEvent").value = "";
 
+            // 色選択をリセット
             document.getElementById("colorPicker").style.display  = "none";
             document.getElementById("colorToggleBtn").textContent = "🎨 色を選ぶ";
             document.querySelectorAll(".colorOption").forEach(e => e.classList.remove("selected"));
             document.getElementById("inputColor").value = "#3498db";
 
+            // 編集状態をリセット
             editingKey = "";
             editingId  = -1;
 
@@ -528,11 +807,16 @@
             document.getElementById("overlay").style.display = "none";
         }
 
+        // オーバーレイクリックで全モーダルを閉じる
+        function closeAllModals() {
+            closeModal();
+            closeViewModal();
+        }
 
-        // ==============================
-        // 予定保存（新規 or 編集）（Supabase）
-        // ==============================
 
+        // ============================================================
+        // 予定保存（新規追加 or 編集）（Supabase）
+        // ============================================================
         async function saveEvent() {
             const year      = document.getElementById("inputYear").value;
             const month     = String(document.getElementById("inputMonth").value).padStart(2, "0");
@@ -554,32 +838,17 @@
             const dateStr = year + "-" + month + "-" + date;
 
             if (editingId !== -1) {
-                // 編集の場合 → update
+                // 編集の場合 → UPDATE
                 const { error } = await sb
                     .from("events")
-                    .update({
-                        date:       dateStr,
-                        start_time: startTime,
-                        end_time:   endTime,
-                        text:       text,
-                        color:      color
-                    })
-                    .eq("id", editingId);  // idが一致する行を更新
-
+                    .update({ date: dateStr, start_time: startTime, end_time: endTime, text, color })
+                    .eq("id", editingId);
                 if (error) { console.error("更新エラー:", error); return; }
-
             } else {
-                // 新規追加 → insert
+                // 新規の場合 → INSERT
                 const { error } = await sb
                     .from("events")
-                    .insert({
-                        date:       dateStr,
-                        start_time: startTime,
-                        end_time:   endTime,
-                        text:       text,
-                        color:      color
-                    });
-
+                    .insert({ date: dateStr, start_time: startTime, end_time: endTime, text, color });
                 if (error) { console.error("保存エラー:", error); return; }
             }
 
@@ -588,10 +857,9 @@
         }
 
 
-        // ==============================
-        // 予定編集
-        // ==============================
-
+        // ============================================================
+        // 予定編集（タイムラインの予定をクリックすると開く）
+        // ============================================================
         function editEvent(key, idx) {
             const ev    = events[key][idx];
             const parts = key.split("-");
@@ -604,6 +872,7 @@
             document.getElementById("inputEvent").value     = ev.text;
             document.getElementById("inputColor").value     = ev.color;
 
+            // 色ボタンの表示を選択中の色に更新
             document.getElementById("colorPicker").style.display = "none";
             const matchingOption = document.querySelector(".colorOption[data-color='" + ev.color + "']");
             if (matchingOption) {
@@ -621,15 +890,15 @@
         }
 
 
-        // ==============================
-        // 色ピッカー
-        // ==============================
-
+        // ============================================================
+        // 色ピッカーの開閉
+        // ============================================================
         function toggleColorPicker() {
             const picker = document.getElementById("colorPicker");
             picker.style.display = picker.style.display === "none" ? "block" : "none";
         }
 
+        // 色をクリックしたら選択状態にしてボタンテキストを更新
         document.querySelectorAll(".colorOption").forEach(el => {
             el.addEventListener("click", function () {
                 document.querySelectorAll(".colorOption").forEach(e => e.classList.remove("selected"));
@@ -641,10 +910,9 @@
         });
 
 
-        // ==============================
+        // ============================================================
         // ナビゲーション
-        // ==============================
-
+        // ============================================================
         function prevMonth() {
             currentMonth--;
             if (currentMonth < 0) { currentMonth = 11; currentYear--; }
@@ -665,10 +933,9 @@
         }
 
 
-        // ==============================
+        // ============================================================
         // UI表示切替
-        // ==============================
-
+        // ============================================================
         function updateUI() {
             document.getElementById("monthNav").style.display = "flex";
         }
