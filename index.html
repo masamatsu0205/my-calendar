@@ -525,7 +525,6 @@
         window.onload = async function () {
             await fetchHolidays();
             await loadEvents();
-            await loadMeals();
         };
 
 
@@ -573,26 +572,6 @@
 
             renderCalendar();
         }
-
-        async function loadMeals() {
-            const { data, error } = await sb.from("meals").select("*");
-
-            if (error) {
-                console.error("meal取得エラー:", error);
-                return;
-            }
-
-            mealData = {};
-
-            data.forEach(row => {
-                mealData[row.date] = {
-                    morning: row.morning || "unknown",
-                    lunch: row.lunch || "unknown",
-                    dinner: row.dinner || "unknown"
-                };
-            });
-        }
-
 
 
         // ============================================================
@@ -716,29 +695,10 @@
             }
             let idx = MEAL_CYCLE.indexOf(mealData[key][mealType]);
             mealData[key][mealType] = MEAL_CYCLE[(idx + 1) % MEAL_CYCLE.length];
+
             renderCalendar();
-            saveMealToDB(key);
         }
 
-        // ==============================
-        // ご飯データをSupabaseに保存
-        // ==============================
-        async function saveMealToDB(key) {
-            const data = mealData[key];
-
-            const { error } = await sb
-                .from("meals")
-                .upsert({
-                    date: key,
-                    morning: data.morning,
-                    lunch: data.lunch,
-                    dinner: data.dinner
-                }, { onConflict: 'date' });
-
-            if (error) {
-                console.error("meal保存エラー:", error);
-            }
-        }
 
         // ============================================================
         // ご飯モーダルを開く
