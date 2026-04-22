@@ -513,8 +513,8 @@
         // ============================================================
         window.onload = async function () {
             await fetchHolidays();
-            // eventsとmealsを並行取得してから描画
-            await Promise.all([loadEvents(), loadMeals()]);
+            await loadEvents();
+            await loadMeals();
         };
 
 
