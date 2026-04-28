@@ -125,6 +125,88 @@
         }
 
         /* ============================================================
+           予定一覧ビュー
+        ============================================================ */
+        #listView {
+            display: none;
+            width: 80%;
+            margin: 10px auto;
+            color: #00D9FF;
+        }
+
+        /* 年ブロック */
+        .list-year {
+            font-size: 24px;
+            font-weight: 900;
+            color: #00D9FF;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            border-bottom: 2px solid #7b7256;
+            padding-bottom: 4px;
+        }
+
+        /* 月ブロック */
+        .list-month {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00D9FF;
+            margin-top: 12px;
+            margin-bottom: 4px;
+            padding-left: 16px;
+        }
+
+        /* 予定1件分の行 */
+        .list-event-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 12px 6px 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .list-event-row:hover { background: rgba(255,255,255,0.08); }
+
+        /* 日付部分 */
+        .list-date {
+            font-size: 14px;
+            color: #aaa;
+            width: 40px;
+            flex-shrink: 0;
+        }
+
+        /* 時刻部分 */
+        .list-time {
+            font-size: 13px;
+            color: #888;
+            width: 110px;
+            flex-shrink: 0;
+        }
+
+        /* 予定内容 */
+        .list-text {
+            font-size: 14px;
+            color: white;
+            flex: 1;
+        }
+
+        /* 予定の色インジケーター（左端の細い縦線） */
+        .list-color-bar {
+            width: 4px;
+            height: 36px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        /* 予定なし表示 */
+        .list-empty {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+            font-size: 16px;
+        }
+
+        /* ============================================================
            タイムラインモーダル
         ============================================================ */
         #viewModal { width: 650px; height: 90vh; overflow-y: auto; }
@@ -173,16 +255,12 @@
         ============================================================ */
         #modal h3    { color: #00D9FF; display: inline; }
         #modal label { color: #00D9FF; }
-
-        /* モーダルタイトル行（タイトル＋複製ボタンを横並び） */
         .modal-title-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
         }
-
-        /* 複製ボタン：小さめに */
         #duplicateBtn {
             font-size: 13px;
             padding: 4px 10px;
@@ -193,11 +271,6 @@
             cursor: pointer;
         }
         #duplicateBtn:hover { background: #ada07a; }
-
-        /* ============================================================
-           日付選択ボタン
-           年入力の代わりに表示するボタン
-        ============================================================ */
         #datePickerBtn {
             font-size: 16px;
             padding: 6px 12px;
@@ -211,8 +284,7 @@
         #datePickerBtn:hover { background: #ada07a; }
 
         /* ============================================================
-           ミニカレンダー（日付ピッカー）
-           モーダルの上に重ねて表示
+           ミニカレンダー
         ============================================================ */
         #miniCal {
             display: none;
@@ -223,11 +295,9 @@
             border: 2px solid #00D9FF;
             border-radius: 10px;
             padding: 12px;
-            z-index: 1100;  /* モーダルより上 */
+            z-index: 1100;
             width: 260px;
         }
-
-        /* ミニカレンダーのヘッダー（＜ 年月 ＞） */
         #miniCalHeader {
             display: flex;
             justify-content: space-between;
@@ -242,32 +312,18 @@
             border: none;
         }
         #miniCalTitle { font-size: 15px; font-weight: bold; color: #00D9FF; }
-
-        /* ミニカレンダーのテーブル */
-        #miniCalTable {
-            width: 100%;
-            border-collapse: collapse;
-        }
+        #miniCalTable { width: 100%; border-collapse: collapse; }
         #miniCalTable th {
-            color: #00D9FF;
-            font-size: 12px;
-            text-align: center;
-            padding: 2px;
+            color: #00D9FF; font-size: 12px;
+            text-align: center; padding: 2px;
         }
         #miniCalTable td {
-            text-align: center;
-            padding: 4px 2px;
-            font-size: 13px;
-            cursor: pointer;
-            border-radius: 4px;
-            color: white;
-            /* カレンダー本体のtdスタイルを上書き */
-            height: auto !important;
-            width: auto !important;
-            border: none !important;
-            vertical-align: middle !important;
-            font-weight: normal !important;
-            position: static !important;
+            text-align: center; padding: 4px 2px;
+            font-size: 13px; cursor: pointer;
+            border-radius: 4px; color: white;
+            height: auto !important; width: auto !important;
+            border: none !important; vertical-align: middle !important;
+            font-weight: normal !important; position: static !important;
             background: none !important;
         }
         #miniCalTable td:hover { background: #7b7256 !important; }
@@ -347,24 +403,16 @@
          予定追加・編集モーダル
     ============================================================ -->
     <div id="modal" class="modal">
-
-        <!-- タイトル行：左に「予定追加」、右に「複製」ボタン -->
         <div class="modal-title-row">
             <h3 id="modalTitle">予定追加</h3>
-            <!-- 複製ボタン：編集時のみ表示（新規追加時は非表示） -->
             <button id="duplicateBtn" style="display:none;" onclick="duplicateEvent()">複製</button>
         </div>
-
-        <!-- 日付選択：ボタンを押すとミニカレンダーが開く -->
         <label>日付:
             <button type="button" id="datePickerBtn" onclick="openMiniCal()">日付を選ぶ</button>
         </label><br><br>
-
-        <!-- 選択した年月日は hidden input に保持 -->
         <input type="hidden" id="inputYear">
         <input type="hidden" id="inputMonth">
         <input type="hidden" id="inputDate">
-
         <label>開始: <input type="time" id="inputStartTime"></label><br><br>
         <label>終了: <input type="time" id="inputEndTime"></label><br><br>
         <label>予定: <input type="text" id="inputEvent"></label><br><br>
@@ -385,8 +433,7 @@
     </div>
 
     <!-- ============================================================
-         ミニカレンダー（日付ピッカー）
-         モーダルの上に重ねて表示
+         ミニカレンダー
     ============================================================ -->
     <div id="miniCal">
         <div id="miniCalHeader">
@@ -423,33 +470,24 @@
             <label><input type="checkbox" class="dayCheck" value="6"> 土</label>
         </div>
         <table>
-            <tr>
-                <td>朝</td>
-                <td>
-                    <button class="meal-select-btn" data-meal="morning" data-state="unknown"   style="background:#aaaaaa;" onclick="selectMealBtn(this)"></button>
-                    <button class="meal-select-btn" data-meal="morning" data-state="needed"    style="background:#2ecc71;" onclick="selectMealBtn(this)"></button>
-                    <button class="meal-select-btn" data-meal="morning" data-state="notNeeded" style="background:#e74c3c;" onclick="selectMealBtn(this)"></button>
-                    <button class="meal-select-btn" data-meal="morning" data-state="bento"     style="background:#f1c40f;" onclick="selectMealBtn(this)"></button>
-                </td>
-            </tr>
-            <tr>
-                <td>昼</td>
-                <td>
-                    <button class="meal-select-btn" data-meal="lunch" data-state="unknown"   style="background:#aaaaaa;" onclick="selectMealBtn(this)"></button>
-                    <button class="meal-select-btn" data-meal="lunch" data-state="needed"    style="background:#2ecc71;" onclick="selectMealBtn(this)"></button>
-                    <button class="meal-select-btn" data-meal="lunch" data-state="notNeeded" style="background:#e74c3c;" onclick="selectMealBtn(this)"></button>
-                    <button class="meal-select-btn" data-meal="lunch" data-state="bento"     style="background:#f1c40f;" onclick="selectMealBtn(this)"></button>
-                </td>
-            </tr>
-            <tr>
-                <td>晩</td>
-                <td>
-                    <button class="meal-select-btn" data-meal="dinner" data-state="unknown"   style="background:#aaaaaa;" onclick="selectMealBtn(this)"></button>
-                    <button class="meal-select-btn" data-meal="dinner" data-state="needed"    style="background:#2ecc71;" onclick="selectMealBtn(this)"></button>
-                    <button class="meal-select-btn" data-meal="dinner" data-state="notNeeded" style="background:#e74c3c;" onclick="selectMealBtn(this)"></button>
-                    <button class="meal-select-btn" data-meal="dinner" data-state="bento"     style="background:#f1c40f;" onclick="selectMealBtn(this)"></button>
-                </td>
-            </tr>
+            <tr><td>朝</td><td>
+                <button class="meal-select-btn" data-meal="morning" data-state="unknown"   style="background:#aaaaaa;" onclick="selectMealBtn(this)"></button>
+                <button class="meal-select-btn" data-meal="morning" data-state="needed"    style="background:#2ecc71;" onclick="selectMealBtn(this)"></button>
+                <button class="meal-select-btn" data-meal="morning" data-state="notNeeded" style="background:#e74c3c;" onclick="selectMealBtn(this)"></button>
+                <button class="meal-select-btn" data-meal="morning" data-state="bento"     style="background:#f1c40f;" onclick="selectMealBtn(this)"></button>
+            </td></tr>
+            <tr><td>昼</td><td>
+                <button class="meal-select-btn" data-meal="lunch" data-state="unknown"   style="background:#aaaaaa;" onclick="selectMealBtn(this)"></button>
+                <button class="meal-select-btn" data-meal="lunch" data-state="needed"    style="background:#2ecc71;" onclick="selectMealBtn(this)"></button>
+                <button class="meal-select-btn" data-meal="lunch" data-state="notNeeded" style="background:#e74c3c;" onclick="selectMealBtn(this)"></button>
+                <button class="meal-select-btn" data-meal="lunch" data-state="bento"     style="background:#f1c40f;" onclick="selectMealBtn(this)"></button>
+            </td></tr>
+            <tr><td>晩</td><td>
+                <button class="meal-select-btn" data-meal="dinner" data-state="unknown"   style="background:#aaaaaa;" onclick="selectMealBtn(this)"></button>
+                <button class="meal-select-btn" data-meal="dinner" data-state="needed"    style="background:#2ecc71;" onclick="selectMealBtn(this)"></button>
+                <button class="meal-select-btn" data-meal="dinner" data-state="notNeeded" style="background:#e74c3c;" onclick="selectMealBtn(this)"></button>
+                <button class="meal-select-btn" data-meal="dinner" data-state="bento"     style="background:#f1c40f;" onclick="selectMealBtn(this)"></button>
+            </td></tr>
         </table>
         <br>
         <button onclick="applyMealBulk()">この月に適用</button>
@@ -470,19 +508,31 @@
          ヘッダー
     ============================================================ -->
     <div id="calendarHeader">
+        <!-- 左：月ナビ（カレンダーモード）or 戻るボタン（一覧モード） -->
         <div id="monthNav">
             <button onclick="prevMonth()">＜＜</button>
             <button onclick="goToday()">今月へ</button>
             <button onclick="nextMonth()">＞＞</button>
         </div>
+        <div id="backNav" style="display:none;">
+            <button onclick="showCalendar()">戻る</button>
+        </div>
+
         <div id="calendarTitle"></div>
+
+        <!-- 右：ボタン群 -->
         <div>
+            <button onclick="showList()">予定一覧</button>
             <button onclick="openModal()">予定追加</button>
             <button onclick="openMealModal()">ご飯</button>
         </div>
     </div>
 
+    <!-- カレンダー本体 -->
     <table border="1" id="calendar"></table>
+
+    <!-- 予定一覧ビュー -->
+    <div id="listView"></div>
 
 
     <script>
@@ -524,6 +574,7 @@
         let editingKey   = "";
         let editingId    = -1;
         let holidays     = {};
+        let viewMode     = "calendar"; // "calendar" or "list"
 
         const today      = new Date();
         const todayYear  = today.getFullYear();
@@ -531,10 +582,8 @@
         const todayDate  = today.getDate();
         const days       = ["日", "月", "火", "水", "木", "金", "土"];
 
-        // ミニカレンダーの表示年月（日付ピッカー用）
         let miniCalYear  = new Date().getFullYear();
         let miniCalMonth = new Date().getMonth();
-
 
         // ============================================================
         // 初期化
@@ -597,7 +646,7 @@
         }
 
         // ============================================================
-        // 食事データ保存（upsert）
+        // 食事データ保存
         // ============================================================
         async function saveMeal(key) {
             const meal = mealData[key];
@@ -636,7 +685,6 @@
             }
 
             let count = firstDay;
-
             for (let d = 1; d <= lastDate; d++) {
                 let dayOfWeek = (d + firstDay - 1) % 7;
                 let key =
@@ -690,6 +738,105 @@
         }
 
         // ============================================================
+        // 予定一覧ビューの描画
+        // 年→月→日の順にグループ化して表示
+        // ============================================================
+        function renderListView() {
+            const listView = document.getElementById("listView");
+
+            // eventsを日付順にフラットなリストに変換
+            let allEvents = [];
+            for (let key in events) {
+                for (let ev of events[key]) {
+                    allEvents.push({ key, ev });
+                }
+            }
+
+            // 日付・開始時刻順にソート
+            allEvents.sort((a, b) => {
+                if (a.key !== b.key) return a.key.localeCompare(b.key);
+                return a.ev.start_time.localeCompare(b.ev.start_time);
+            });
+
+            if (allEvents.length === 0) {
+                listView.innerHTML = "<div class='list-empty'>予定がありません</div>";
+                return;
+            }
+
+            let html      = "";
+            let lastYear  = "";
+            let lastMonth = "";
+
+            for (let { key, ev } of allEvents) {
+                const parts = key.split("-");
+                const year  = parts[0];
+                const month = Number(parts[1]);
+                const day   = Number(parts[2]);
+
+                // 年が変わったら年ヘッダーを出す
+                if (year !== lastYear) {
+                    html     += "<div class='list-year'>" + year + "年</div>";
+                    lastYear  = year;
+                    lastMonth = ""; // 年が変わったら月もリセット
+                }
+
+                // 月が変わったら月ヘッダーを出す
+                let monthKey = year + "-" + month;
+                if (monthKey !== lastMonth) {
+                    html     += "<div class='list-month'>" + month + "月</div>";
+                    lastMonth = monthKey;
+                }
+
+                // 予定行（クリックで編集モーダルを開く）
+                // eventsオブジェクトのidxを特定する
+                let idx = events[key].findIndex(e => e.id === ev.id);
+
+                html +=
+                    "<div class='list-event-row' onclick='editEventFromList(\"" + key + "\"," + idx + ")'>" +
+                    "<div class='list-color-bar' style='background:" + ev.color + ";'></div>" +
+                    "<div class='list-date'>" + day + "日</div>" +
+                    "<div class='list-time'>" + formatTime(ev.start_time) + " - " + formatTime(ev.end_time) + "</div>" +
+                    "<div class='list-text'>" + ev.text + "</div>" +
+                    "</div>";
+            }
+
+            listView.innerHTML = html;
+        }
+
+        // ============================================================
+        // 予定一覧から編集モーダルを開く
+        // ============================================================
+        function editEventFromList(key, idx) {
+            editEvent(key, idx);
+        }
+
+        // ============================================================
+        // カレンダーモードに切り替え
+        // ============================================================
+        function showCalendar() {
+            viewMode = "calendar";
+            document.getElementById("calendar").style.display  = "table";
+            document.getElementById("listView").style.display  = "none";
+            document.getElementById("monthNav").style.display  = "flex";
+            document.getElementById("backNav").style.display   = "none";
+            document.getElementById("title").textContent =
+                currentYear + "年" + (currentMonth + 1) + "月";
+        }
+
+        // ============================================================
+        // 一覧モードに切り替え
+        // ============================================================
+        function showList() {
+            viewMode = "list";
+            document.getElementById("calendar").style.display  = "none";
+            document.getElementById("listView").style.display  = "block";
+            document.getElementById("monthNav").style.display  = "none";
+            document.getElementById("backNav").style.display   = "block";
+            document.getElementById("title").textContent       = "予定一覧";
+            renderListView();
+        }
+
+        // ============================================================
         // 朝昼晩の丸クリック
         // ============================================================
         async function cycleMeal(e, key, mealType) {
@@ -704,12 +851,9 @@
         }
 
         // ============================================================
-        // ミニカレンダー（日付ピッカー）
+        // ミニカレンダー
         // ============================================================
-
-        // ミニカレンダーを開く
         function openMiniCal() {
-            // 現在モーダルに入っている年月を初期表示にする
             let y = parseInt(document.getElementById("inputYear").value);
             let m = parseInt(document.getElementById("inputMonth").value);
             if (y) { miniCalYear  = y; }
@@ -717,80 +861,52 @@
             renderMiniCal();
             document.getElementById("miniCal").style.display = "block";
         }
-
-        // ミニカレンダーを閉じる
         function closeMiniCal() {
             document.getElementById("miniCal").style.display = "none";
         }
-
-        // ミニカレンダーの前月・次月
         function miniCalPrev() { miniCalMonth--; if (miniCalMonth < 0) { miniCalMonth = 11; miniCalYear--; } renderMiniCal(); }
         function miniCalNext() { miniCalMonth++; if (miniCalMonth > 11) { miniCalMonth = 0; miniCalYear++; } renderMiniCal(); }
 
-        // ミニカレンダーを描画する
         function renderMiniCal() {
             document.getElementById("miniCalTitle").textContent =
                 miniCalYear + "年" + (miniCalMonth + 1) + "月";
-
             const firstDay = new Date(miniCalYear, miniCalMonth, 1).getDay();
             const lastDate = new Date(miniCalYear, miniCalMonth + 1, 0).getDate();
             const prevLast = new Date(miniCalYear, miniCalMonth, 0).getDate();
-
-            let html = "";
-            let count = 0;
-
+            let html = "", count = 0;
             html += "<tr>";
-
-            // 前月の日付（灰色・クリック不可）
             for (let i = 0; i < firstDay; i++) {
-                let pd = prevLast - firstDay + i + 1;
-                html += "<td class='mini-other'>" + pd + "</td>";
+                html += "<td class='mini-other'>" + (prevLast - firstDay + i + 1) + "</td>";
                 count++;
             }
-
-            // 当月の日付
             for (let d = 1; d <= lastDate; d++) {
                 let dow = (d + firstDay - 1) % 7;
                 let cls = "";
                 if (miniCalYear === todayYear && miniCalMonth === todayMonth && d === todayDate) {
                     cls = "mini-today";
-                } else if (dow === 0) {
-                    cls = "mini-sun";
-                } else if (dow === 6) {
-                    cls = "mini-sat";
-                }
-
-                // 日付をクリックしたらモーダルの年月日を更新してミニカレンダーを閉じる
+                } else if (dow === 0) { cls = "mini-sun";
+                } else if (dow === 6) { cls = "mini-sat"; }
                 html += "<td class='" + cls + "' onclick='selectMiniCalDate(" + miniCalYear + "," + (miniCalMonth + 1) + "," + d + ")'>" + d + "</td>";
                 count++;
                 if (count % 7 === 0 && d < lastDate) { html += "</tr><tr>"; }
             }
-
-            // 翌月の日付（灰色・クリック不可）
             let next = 1;
             while (count % 7 !== 0) {
                 html += "<td class='mini-other'>" + next + "</td>";
                 next++; count++;
             }
-
             html += "</tr>";
             document.getElementById("miniCalBody").innerHTML = html;
         }
 
-        // ミニカレンダーで日付を選んだとき
         function selectMiniCalDate(y, m, d) {
-            // hidden inputに年月日を保存
             document.getElementById("inputYear").value  = y;
             document.getElementById("inputMonth").value = m;
             document.getElementById("inputDate").value  = d;
-
-            // ボタンのテキストを選んだ日付に更新
             document.getElementById("datePickerBtn").textContent =
                 y + "年" + m + "月" + d + "日";
-
             closeMiniCal();
         }
-
 
         // ============================================================
         // タイムライン表示
@@ -805,7 +921,6 @@
                 html += "<div class='timeline-row'>";
                 html += "<div class='timeline-time'>" + h + ":00</div>";
 
-                // 左側
                 html += "<div class='timeline-left'>";
                 if (events[key]) {
                     for (let idx = 0; idx < events[key].length; idx++) {
@@ -826,10 +941,7 @@
                     }
                 }
                 html += "</div>";
-
                 html += "<div class='timeline-center'></div>";
-
-                // 右側
                 html += "<div class='timeline-right'>";
                 if (events[key]) {
                     for (let idx = 0; idx < events[key].length; idx++) {
@@ -876,12 +988,16 @@
             const { error } = await sb.from("events").delete().eq("id", id);
             if (error) { console.error("削除エラー:", error); return; }
             await loadEvents();
-            openTimeline(key);
-            renderCalendar();
+            if (viewMode === "list") {
+                renderListView();
+            } else {
+                openTimeline(key);
+                renderCalendar();
+            }
         }
 
         // ============================================================
-        // 予定追加モーダルを開く（新規）
+        // 予定追加モーダルを開く
         // ============================================================
         function openModal() {
             const now = new Date();
@@ -889,14 +1005,10 @@
             let m = now.getMonth() + 1;
             let d = now.getDate();
 
-            // hidden inputに現在日付をセット
             document.getElementById("inputYear").value  = y;
             document.getElementById("inputMonth").value = m;
             document.getElementById("inputDate").value  = d;
-
-            // ボタンのテキストを今日の日付に
-            document.getElementById("datePickerBtn").textContent =
-                y + "年" + m + "月" + d + "日";
+            document.getElementById("datePickerBtn").textContent = y + "年" + m + "月" + d + "日";
 
             document.getElementById("inputStartTime").value =
                 String(now.getHours()).padStart(2, "0") + ":" +
@@ -911,9 +1023,8 @@
             document.querySelectorAll(".colorOption").forEach(e => e.classList.remove("selected"));
             document.getElementById("inputColor").value = "#3498db";
 
-            // タイトルを「予定追加」に、複製ボタンを非表示に
-            document.getElementById("modalTitle").textContent      = "予定追加";
-            document.getElementById("duplicateBtn").style.display  = "none";
+            document.getElementById("modalTitle").textContent     = "予定追加";
+            document.getElementById("duplicateBtn").style.display = "none";
 
             editingKey = "";
             editingId  = -1;
@@ -935,7 +1046,7 @@
         }
 
         // ============================================================
-        // 予定保存（新規 or 編集）
+        // 予定保存
         // ============================================================
         async function saveEvent() {
             const year      = document.getElementById("inputYear").value;
@@ -970,11 +1081,15 @@
 
             closeModal();
             await loadEvents();
-            renderCalendar();
+            if (viewMode === "list") {
+                renderListView(); // 一覧モードなら一覧を更新
+            } else {
+                renderCalendar();
+            }
         }
 
         // ============================================================
-        // 予定編集（タイムラインの予定クリックで開く）
+        // 予定編集
         // ============================================================
         function editEvent(key, idx) {
             const ev    = events[key][idx];
@@ -986,10 +1101,7 @@
             document.getElementById("inputYear").value  = y;
             document.getElementById("inputMonth").value = m;
             document.getElementById("inputDate").value  = d;
-
-            // ボタンのテキストを編集する予定の日付に
-            document.getElementById("datePickerBtn").textContent =
-                y + "年" + m + "月" + d + "日";
+            document.getElementById("datePickerBtn").textContent = y + "年" + m + "月" + d + "日";
 
             document.getElementById("inputStartTime").value = formatTime(ev.start_time);
             document.getElementById("inputEndTime").value   = formatTime(ev.end_time);
@@ -1004,7 +1116,6 @@
                 document.getElementById("colorToggleBtn").textContent = "🎨 " + matchingOption.textContent;
             }
 
-            // タイトルを「予定編集」に、複製ボタンを表示
             document.getElementById("modalTitle").textContent     = "予定編集";
             document.getElementById("duplicateBtn").style.display = "inline";
 
@@ -1018,7 +1129,6 @@
 
         // ============================================================
         // 予定複製
-        // 日付だけ変えて、同じ時間・内容・色で新規追加する
         // ============================================================
         async function duplicateEvent() {
             const year      = document.getElementById("inputYear").value;
@@ -1035,15 +1145,17 @@
             }
 
             const dateStr = year + "-" + month + "-" + date;
-
-            // editingIdはそのままなので元の予定は消えない → 常にINSERT
             const { error } = await sb.from("events")
                 .insert({ date: dateStr, start_time: startTime, end_time: endTime, text, color });
             if (error) { console.error("複製エラー:", error); return; }
 
             closeModal();
             await loadEvents();
-            renderCalendar();
+            if (viewMode === "list") {
+                renderListView();
+            } else {
+                renderCalendar();
+            }
         }
 
         // ============================================================
@@ -1074,12 +1186,10 @@
             document.getElementById("mealModal").style.display = "block";
             document.getElementById("overlay").style.display   = "block";
         }
-
         function closeMealModal() {
             document.getElementById("mealModal").style.display = "none";
             document.getElementById("overlay").style.display   = "none";
         }
-
         function selectMealBtn(btn) {
             let meal  = btn.dataset.meal;
             let state = btn.dataset.state;
@@ -1088,7 +1198,6 @@
             btn.classList.add("selected");
             mealModalSelection[meal] = state;
         }
-
         async function applyMealBulk() {
             let checkedDays = [];
             document.querySelectorAll(".dayCheck:checked").forEach(cb => {
@@ -1098,7 +1207,6 @@
 
             let lastDate     = new Date(currentYear, currentMonth + 1, 0).getDate();
             let savePromises = [];
-
             for (let d = 1; d <= lastDate; d++) {
                 let date    = new Date(currentYear, currentMonth, d);
                 let weekDay = date.getDay();
@@ -1116,7 +1224,6 @@
                     savePromises.push(saveMeal(key));
                 }
             }
-
             await Promise.all(savePromises);
             closeMealModal();
             renderCalendar();
@@ -1146,7 +1253,10 @@
         // UI表示切替
         // ============================================================
         function updateUI() {
-            document.getElementById("monthNav").style.display = "flex";
+            document.getElementById("monthNav").style.display  = "flex";
+            document.getElementById("backNav").style.display   = "none";
+            document.getElementById("calendar").style.display  = "table";
+            document.getElementById("listView").style.display  = "none";
         }
 
     </script>
