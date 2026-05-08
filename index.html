@@ -497,11 +497,12 @@
          タイムラインモーダル
     ============================================================ -->
     <div id="viewModal" class="modal">
-        <h3 id="viewModalTitle"></h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <h3 id="viewModalTitle"></h3>
+            <button onclick="closeViewModal()">閉じる</button>
+        </div>
         <div id="timeline"></div>
-        <br>
-        <button onclick="closeViewModal()">閉じる</button>
-    </div>
+    </div>    
 
     <!-- ============================================================
          ヘッダー
