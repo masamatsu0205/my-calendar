@@ -170,15 +170,14 @@
         /* 日付部分 */
         .list-date {
             font-size: 14px;
-            color: #aaa;
+            color: #00D9FF; /* 水色に変更 */
             width: 40px;
             flex-shrink: 0;
         }
 
-        /* 時刻部分 */
         .list-time {
             font-size: 13px;
-            color: #888;
+            color: #00D9FF; /* 水色に変更 */
             width: 110px;
             flex-shrink: 0;
         }
@@ -829,7 +828,8 @@
         // ============================================================
         function showList() {
             viewMode = "list";
-            document.body.style.cssText = "background: #3b0b0b;"; // 赤一色に切り替え
+            document.body.style.cssText =
+                "background: #3b0b0b url('ここに画像URLを貼る') no-repeat right center / contain;";
             document.getElementById("calendar").style.display  = "none";
             document.getElementById("listView").style.display  = "block";
             document.getElementById("monthNav").style.display  = "none";
