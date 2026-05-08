@@ -815,6 +815,7 @@
         // ============================================================
         function showCalendar() {
             viewMode = "calendar";
+            document.body.style.cssText = ""; // インラインスタイルをリセット→CSSの背景画像に戻る
             document.getElementById("calendar").style.display  = "table";
             document.getElementById("listView").style.display  = "none";
             document.getElementById("monthNav").style.display  = "flex";
@@ -828,6 +829,7 @@
         // ============================================================
         function showList() {
             viewMode = "list";
+            document.body.style.cssText = "background: #3b0b0b;"; // 赤一色に切り替え
             document.getElementById("calendar").style.display  = "none";
             document.getElementById("listView").style.display  = "block";
             document.getElementById("monthNav").style.display  = "none";
@@ -835,7 +837,6 @@
             document.getElementById("title").textContent       = "予定一覧";
             renderListView();
         }
-
         // ============================================================
         // 朝昼晩の丸クリック
         // ============================================================
