@@ -758,6 +758,9 @@
                 return a.ev.start_time.localeCompare(b.ev.start_time);
             });
 
+            const todayKey = todayYear + "-" + String(todayMonth + 1).padStart(2, "0") + "-" + String(todayDate).padStart(2, "0");
+            allEvents = allEvents.filter(({ key }) => key >= todayKey);
+
             if (allEvents.length === 0) {
                 listView.innerHTML = "<div class='list-empty'>予定がありません</div>";
                 return;
